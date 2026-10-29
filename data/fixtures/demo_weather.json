@@ -1,0 +1,14 @@
+{
+  "dataset": "synthetic-demo",
+  "domain": "weather",
+  "license": "CC0-1.0",
+  "retrieved_at": "2026-10-25T00:00:00+00:00",
+  "records": [
+    {"record_id": "demo-weather-001", "station_id": "AT-WEATHER-KREMS", "event_time": "2026-10-24T00:00:00+00:00", "temperature_c": 8.4, "precipitation_mm": 0.0},
+    {"record_id": "demo-weather-002", "station_id": "AT-WEATHER-KREMS", "event_time": "2026-10-24T01:00:00+00:00", "temperature_c": 8.1, "precipitation_mm": 0.0},
+    {"record_id": "demo-weather-003", "station_id": "AT-WEATHER-KREMS", "event_time": "2026-10-24T02:00:00+00:00", "temperature_c": 7.9, "precipitation_mm": 0.2},
+    {"record_id": "demo-weather-004", "station_id": "AT-WEATHER-KREMS", "event_time": "2026-10-24T03:00:00+00:00", "temperature_c": 7.6, "precipitation_mm": 0.4},
+    {"record_id": "demo-weather-005", "station_id": "AT-WEATHER-KREMS", "event_time": "2026-10-24T04:00:00+00:00", "temperature_c": 7.5, "precipitation_mm": 0.1},
+    {"record_id": "demo-weather-006", "station_id": "AT-WEATHER-KREMS", "event_time": "2026-10-24T05:00:00+00:00", "temperature_c": 7.4, "precipitation_mm": 0.0}
+  ]
+}

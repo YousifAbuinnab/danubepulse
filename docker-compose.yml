@@ -1,0 +1,283 @@
+x-airflow-common: &airflow-common
+  image: apache/airflow:3.3.2-python3.12
+  profiles: ["airflow"]
+  user: "${AIRFLOW_UID:-50000}:0"
+  environment: &airflow-environment
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__PARALLELISM: "2"
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "${AIRFLOW_ADMIN_USER:-admin}:admin"
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/auth/passwords.json
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api:8080/execution/
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://danubepulse_airflow:${AIRFLOW_DB_PASSWORD:-}@db:5432/danubepulse_airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE: "3"
+    AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW: "2"
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET:-}
+    AIRFLOW__API__WORKERS: "1"
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    AIRFLOW__SCHEDULER__CATCHUP_BY_DEFAULT: "false"
+    AIRFLOW__DAG_PROCESSOR__PARSING_PROCESSES: "1"
+    AIRFLOW__WORKERS__EXECUTION_API_TIMEOUT: "30"
+    DANUBEPULSE_API_URL: http://api:8000
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags:ro
+    - ./airflow/fixtures:/opt/airflow/fixtures:ro
+    - ./airflow/tests:/opt/airflow/tests:ro
+    - airflow_logs:/opt/airflow/logs
+    - airflow_auth:/opt/airflow/auth
+  depends_on:
+    airflow-init:
+      condition: service_completed_successfully
+    api:
+      condition: service_healthy
+  restart: unless-stopped
+  mem_limit: 1g
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-danubepulse}
+      POSTGRES_USER: ${POSTGRES_USER:-danubepulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the shell or .env file}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U danubepulse -d danubepulse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    command: sh -c "alembic upgrade head && uvicorn danubepulse.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-danubepulse}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the shell or .env file}@db:5432/${POSTGRES_DB:-danubepulse}
+      BRONZE_DIR: /app/data/bronze
+      DATA_MODE: ${DATA_MODE:-demo}
+      ENTSOE_API_TOKEN: ${ENTSOE_API_TOKEN:-}
+      ENTSOE_TERMS_ACCEPTED: ${ENTSOE_TERMS_ACCEPTED:-false}
+      DEMO_CONTROL_TOKEN: ${DEMO_CONTROL_TOKEN:-}
+      LAKEHOUSE_ROOT: /lakehouse
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./data/bronze:/app/data/bronze
+      - ./data/energy-imports:/app/data/energy-imports:ro
+      - lakehouse_data:/lakehouse:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  dashboard:
+    build: .
+    command: streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=8501
+    environment:
+      API_BASE_URL: http://api:8000
+      DEMO_CONTROL_TOKEN: ${DEMO_CONTROL_TOKEN:-}
+      AIRFLOW_HEALTH_URL: http://airflow-api:8080/api/v2/monitor/health
+      AIRFLOW_UI_URL: http://localhost:8080
+      KAFKA_HEALTHCHECK_ADDRESS: kafka:9092
+    ports:
+      - "127.0.0.1:8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  lakehouse:
+    build:
+      context: .
+      dockerfile: lakehouse/Dockerfile
+    profiles: ["lakehouse"]
+    environment:
+      PGHOST: db
+      PGDATABASE: ${POSTGRES_DB:-danubepulse}
+      PGUSER: ${POSTGRES_USER:-danubepulse}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      SPARK_LOCAL_IP: 127.0.0.1
+    volumes:
+      - lakehouse_data:/lakehouse
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 3g
+    cpus: 2
+    pids_limit: 512
+    restart: "no"
+
+  kafka-storage-init:
+    image: apache/kafka:4.1.2
+    profiles: ["kafka"]
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-ec", "chown 1000:1000 /tmp/kraft-combined-logs"]
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs
+    mem_limit: 128m
+
+  kafka:
+    image: apache/kafka:4.1.2
+    profiles: ["kafka"]
+    environment:
+      CLUSTER_ID: "dnPlsStrmKRaftNode00001A"
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_SEGMENT_BYTES: "16777216"
+      KAFKA_NUM_NETWORK_THREADS: "2"
+      KAFKA_NUM_IO_THREADS: "2"
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs
+    depends_on:
+      kafka-storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    mem_limit: 1g
+    cpus: 1
+    restart: unless-stopped
+
+  kafka-init:
+    image: apache/kafka:4.1.2
+    profiles: ["kafka"]
+    environment:
+      KAFKA_HEAP_OPTS: -Xms64m -Xmx128m
+    entrypoint: ["/bin/bash", "-ec"]
+    command:
+      - |
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic danubepulse.events.v1 --partitions 2 --replication-factor 1 --config retention.ms=604800000
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic danubepulse.dead-letters.v1 --partitions 1 --replication-factor 1 --config retention.ms=604800000
+    depends_on:
+      kafka:
+        condition: service_healthy
+    mem_limit: 256m
+
+  streaming-publisher: &streaming-worker
+    build:
+      context: .
+      args:
+        PACKAGE_SPEC: ".[streaming]"
+    profiles: ["kafka"]
+    command: python -m danubepulse.streaming publish
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-danubepulse}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-danubepulse}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      api:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+
+  streaming-consumer:
+    <<: *streaming-worker
+    command: python -m danubepulse.streaming consume
+
+  airflow-db-init:
+    image: postgres:16-alpine
+    profiles: ["airflow"]
+    environment:
+      PGHOST: db
+      POSTGRES_DB: ${POSTGRES_DB:-danubepulse}
+      POSTGRES_USER: ${POSTGRES_USER:-danubepulse}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD:-}
+    volumes:
+      - ./airflow/init-metadata.sh:/init-metadata.sh:ro
+    command: ["sh", "/init-metadata.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  airflow-init:
+    <<: *airflow-common
+    user: "0:0"
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        test -n "$$AIRFLOW__CORE__FERNET_KEY" &&
+        test -n "$$AIRFLOW__API_AUTH__JWT_SECRET" || {
+          echo "Missing Airflow secrets; run python3 scripts/setup_airflow.py"; exit 1;
+        }
+        mkdir -p /opt/airflow/logs /opt/airflow/auth
+        chown -R ${AIRFLOW_UID:-50000}:0 /opt/airflow/logs /opt/airflow/auth
+        exec /entrypoint airflow db migrate
+    depends_on:
+      airflow-db-init:
+        condition: service_completed_successfully
+    restart: "no"
+
+  airflow-api:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+      airflow-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type DagProcessorJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  kafka_data:
+  postgres_data:
+  airflow_logs:
+  airflow_auth:
+  lakehouse_data:

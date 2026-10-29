@@ -1,0 +1,14 @@
+{
+  "dataset": "synthetic-demo",
+  "domain": "river",
+  "license": "CC0-1.0",
+  "retrieved_at": "2026-10-25T00:00:00+00:00",
+  "records": [
+    {"record_id": "demo-river-001", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T00:00:00+00:00", "water_level_m": 2.84, "discharge_m3_s": 1510.0},
+    {"record_id": "demo-river-002", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T01:00:00+00:00", "water_level_m": 2.86, "discharge_m3_s": 1521.0},
+    {"record_id": "demo-river-004", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T03:00:00+00:00", "water_level_m": 2.91, "discharge_m3_s": 1558.0},
+    {"record_id": "demo-river-004", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T03:00:00+00:00", "water_level_m": 2.91, "discharge_m3_s": 1558.0},
+    {"record_id": "demo-river-005", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T04:00:00+00:00", "water_level_m": 2.89, "discharge_m3_s": 1542.0},
+    {"record_id": "demo-river-006", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T05:00:00+00:00", "water_level_m": 2.88, "discharge_m3_s": 1536.0}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "dataset": "synthetic-demo",
+  "domain": "river",
+  "license": "CC0-1.0",
+  "retrieved_at": "2026-10-25T00:00:00+00:00",
+  "records": [
+    {"record_id": "demo-river-schema-007", "station_id": "AT-DANUBE-KREMS", "event_time": "2026-10-24T06:00:00+00:00", "water_level_cm": 288, "discharge_m3_s": 1532.0}
+  ]
+}

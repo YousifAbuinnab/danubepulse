@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "pegel_aktuell.207068",
+      "geometry": {"type": "Point", "coordinates": [14.28491212, 48.30692037]},
+      "properties": {
+        "hzbnr": 207068,
+        "messstelle": "Linz (mock fixture)",
+        "wert": 345,
+        "einheit": "cm",
+        "zeitpunkt": "2026-10-25T23:30:00+01:00",
+        "hydrodienst": "viaDonau",
+        "gewaesser": "Donau",
+        "parameter": "W",
+        "gesamtcode": 130,
+        "internet": "https://example.invalid/mock"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pegel_aktuell.207019",
+      "geometry": {"type": "Point", "coordinates": [13.50333539, 48.58269144]},
+      "properties": {
+        "hzbnr": 207019,
+        "messstelle": "Achleiten (mock fixture)",
+        "wert": 423,
+        "einheit": "m³/s",
+        "zeitpunkt": "2026-10-25T23:35:00+01:00",
+        "hydrodienst": "viaDonau",
+        "gewaesser": "Donau",
+        "parameter": "Q",
+        "gesamtcode": 130,
+        "internet": "https://example.invalid/mock"
+      }
+    }
+  ],
+  "links": []
+}

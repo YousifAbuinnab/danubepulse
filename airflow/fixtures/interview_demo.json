@@ -1,0 +1,38 @@
+{
+  "dataset": "danubepulse-interview-demo",
+  "provenance": "synthetic",
+  "records": [
+    {
+      "domain": "river",
+      "event_time": "2026-10-27T00:00:00Z",
+      "metric": "water_level",
+      "record_id": "interview-river-001",
+      "unit": "m",
+      "value": 2.4
+    },
+    {
+      "domain": "river",
+      "event_time": "2026-10-27T01:00:00Z",
+      "metric": "water_level",
+      "record_id": "interview-river-002",
+      "unit": "m",
+      "value": 2.5
+    },
+    {
+      "domain": "weather",
+      "event_time": "2026-10-27T00:00:00Z",
+      "metric": "temperature",
+      "record_id": "interview-weather-001",
+      "unit": "degC",
+      "value": 11.0
+    },
+    {
+      "domain": "weather",
+      "event_time": "2026-10-27T01:00:00Z",
+      "metric": "temperature",
+      "record_id": "interview-weather-002",
+      "unit": "degC",
+      "value": 12.0
+    }
+  ]
+}
