@@ -185,7 +185,9 @@ After review, choose one separately authorized approach:
 
 The first approach is now in progress: a separate, clean publication review copy has been created without the original Git history. The original repository and all milestone tags remain unchanged.
 
-The publication copy has not yet been initialized as a new Git repository or uploaded to GitHub. Final security, data-rights, authorship, and publication checks are still required. The history-rewriting approach has not been used.
+The separate publication copy has been initialized as an independent Git repository on branch `main`, with clean root commit `d3457b2`. It contains no original development Git history and has not been connected to a GitHub remote or uploaded.
+
+Final security, data-rights, attribution, documentation, and publication checks are still required. The original development repository and its milestone tags remain unchanged. No history rewriting has been performed.
 
 If exposure has already occurred elsewhere, removing history is not sufficient:
 assess downloaded copies, rotate any exposed credentials, and follow the hosting
