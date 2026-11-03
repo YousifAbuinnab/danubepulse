@@ -15,11 +15,9 @@ The core runs on a laptop with PostgreSQL, FastAPI and Streamlit. Airflow,
 Kafka and a PySpark/Delta lakehouse are optional extensions, not prerequisites.
 The demonstration works without provider credentials or live ingestion.
 
-> **Publication preparation, not a released public repository.** A database
-> backup remains reachable in historical commits/tags. Public publication is
-> blocked pending separately approved history/data cleanup. Code licensing is
-> also pending owner review; no MIT license is currently granted.
-> See the [publication checklist](docs/publication.md).
+> **Publication status:** This repository is a clean portfolio copy, separate from the original development Git history. The historical database backup is not included in this repository. Real provider datasets and private credentials are excluded from the published snapshot.
+>
+> The original project code is **All rights reserved** and is not offered under an open-source license. Fabricated demonstration fixtures retain their separate CC0-1.0 designation. The repository is currently private, pending final public-release review. See the [publication checklist](docs/publication.md).
 
 ## Portfolio highlights
 
