@@ -17,8 +17,7 @@ The demonstration works without provider credentials or live ingestion.
 
 > **Publication status:** This repository is a clean portfolio copy, separate from the original development Git history. The historical database backup is not included in this repository. Real provider datasets and private credentials are excluded from the published snapshot.
 >
-> The original project code is **All rights reserved** and is not offered under an open-source license. Fabricated demonstration fixtures retain their separate CC0-1.0 designation. The repository is currently private, pending final public-release review. See the [publication checklist](docs/publication.md).
-
+> > The original project code is **All rights reserved** and is not offered under an open-source license. Fabricated demonstration fixtures retain their separate CC0-1.0 designation. This repository is provided for portfolio review and demonstrates the system using synthetic fixtures. It is not a publicly hosted live-data service. See the [publication checklist](docs/publication.md).
 ## Portfolio highlights
 
 | Engineering problem | Implemented approach |
