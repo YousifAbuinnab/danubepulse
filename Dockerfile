@@ -1,4 +1,5 @@
 FROM python:3.12-slim
+RUN python -m pip install --no-cache-dir --upgrade "pip==26.2.2"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
