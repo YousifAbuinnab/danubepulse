@@ -6,7 +6,11 @@ Stage 8A and Stage 8B have been committed locally on branch stage-8-portfolio as
 
 A separate publication review copy, danubepulse-public-review, was created from the latest committed snapshot without copying the original Git history. The original development repository and its milestone tags remain preserved.
 
-No GitHub push, public repository, or cloud deployment has been performed. Publication remains blocked pending final security, data-rights, attribution, and repository review.
+The clean DanubePulse publication repository has been uploaded to GitHub as a **private repository** at `YousifAbuinnab/danubepulse`, on branch `main`.
+
+All five GitHub Actions CI jobs passed successfully, including publication safety, Python/PostgreSQL, Airflow, Spark/Delta Lake, and Kafka integration.
+
+The repository has not yet been made public, and no cloud application deployment has been performed. Public release remains pending final data-rights, attribution, security, and presentation review.
 
 ### Publication blockers
 
@@ -90,7 +94,7 @@ the general gate false and uses demo mode.
 The PostgreSQL service password in the workflow is a deliberate, isolated
 CI-only value, not a production credential. Never substitute the live URL.
 `TEST_DATABASE_URL` uses disposable schemas; no application database reset occurs.
-Hosted CI has **not** run as part of Stage 8A: a push is explicitly prohibited.
+Hosted GitHub Actions CI has now run against the clean, private publication repository on branch `main`. All five jobs passed: publication safety, Python/PostgreSQL, Airflow, Spark/Delta Lake, and Kafka integration. The original development repository and its historical Git commits remain separate and have not been uploaded.
 
 ## Local verification results
 
@@ -185,7 +189,11 @@ After review, choose one separately authorized approach:
 
 The first approach is now in progress: a separate, clean publication review copy has been created without the original Git history. The original repository and all milestone tags remain unchanged.
 
-The separate publication copy has been initialized as an independent Git repository on branch `main`, with clean root commit `d3457b2`. It contains no original development Git history and has not been connected to a GitHub remote or uploaded.
+The separate publication copy is an independent Git repository on branch `main`, connected to the private GitHub repository `YousifAbuinnab/danubepulse`. The latest security update is recorded in commit `d324494`.
+
+The publication repository contains only its clean history, not the original development history or historical database backup. All five GitHub Actions CI jobs have passed. The repository remains private pending final public-release review.
+
+The original development repository and its milestone tags remain unchanged. No history rewriting or cloud application deployment has been performed.
 
 Final security, data-rights, attribution, documentation, and publication checks are still required. The original development repository and its milestone tags remain unchanged. No history rewriting has been performed.
 
